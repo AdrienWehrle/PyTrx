@@ -1,0 +1,9 @@
+RadialDistortion
+[-0.176	0.1204	0.1774]                    
+TangentialDistortion
+[0.0032	6.7666E-06]
+IntrinsicMatrix
+[4412.3	0.	0.]
+[0.	4378.2	0.]
+[2596	1620.3	1.]
+End

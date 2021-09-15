@@ -25,7 +25,7 @@ section of this script).
 '''
 
 #Import packages
-import os
+import os, sys
 
 #Import PyTrx modules (from PyTrx file directory)
 import sys
@@ -49,9 +49,9 @@ from Utilities import plotLinePX, plotLineXYZ
 #---------------------------   Initialisation   -------------------------------
 
 #Define data input directories
-camdata = '../Examples/camenv_data/camenvs/CameraEnvironmentData_TU1_2015.txt'
-invmask = '../Examples/camenv_data/invmasks/TU1_2015_inv.jpg'  
-camimgs = '../Examples/images/TU1_2015_subset/*.JPG'
+camdata = '../Examples/camenv_data/camenvs/CameraEnvironment_QAS_2020.txt'
+invmask = None  
+camimgs = '../Examples/images/QAS_test/*.CR2'
 
 #Define data output directory
 destination = '../Examples/results/manualline/'
@@ -61,16 +61,23 @@ if not os.path.exists(destination):
 #Define camera environment
 cam = CamEnv(camdata)
 
+# #Plot camera environment
+# cam.showGCPs()
+# cam.showPrincipalPoint()
+# cam.showCalib()
 
 #--------------------   Optimise camera environment   -------------------------
 
-#Optimisation parameters
-optflag = 'YPR'                 #Parameters to optimise (YPR/INT/EXT/ALL)
-optmethod = 'trf'               #Optimisation method (trf/dogbox/lm)
-show=False                      #Show refined camera environment
+# #Optimisation parameters
+# optflag = 'YPR'                 #Parameters to optimise (YPR/INT/EXT/ALL)
+# optmethod = 'trf'               #Optimisation method (trf/dogbox/lm)
+# show=True                       #Show refined camera environment
 
-#Optimise camera environment
-cam.optimiseCamEnv(optflag, optmethod, show)
+# #Optimise camera environment for YPR
+# cam.optimiseCamEnv(optflag, optmethod, show)
+# #Plot camera environment
+# cam.showPrincipalPoint()
+# cam.showCalib()
 
 
 #---------------------   Calculate homography   -------------------------------
@@ -130,7 +137,7 @@ FileHandler.writeLineCoords(pxcoords, xyzcoords, imn,
 FileHandler.writeHomogFile(hg, imn, destination+'homography.csv')
 
 #Write shapefiles from line data  
-FileHandler.writeLineSHP(xyzcoords, imn, destination + 'shapefiles/', 32633)
+FileHandler.writeLineSHP(xyzcoords, imn, destination + 'shapefiles/', 32622)
 
 
 #----------------------------   Show results   --------------------------------  
@@ -138,17 +145,17 @@ FileHandler.writeLineSHP(xyzcoords, imn, destination + 'shapefiles/', 32633)
 #Define destination
 target = destination + 'outputimgs/'
 
-#Get dem, images, camera matrix and distortion parameters
-dem = cam.getDEM()
-imgset=terminus._imageSet
-cameraMatrix=cam.getCamMatrixCV2()
-distortP=cam.getDistortCoeffsCV2()
+# #Get dem, images, camera matrix and distortion parameters
+# dem = cam.getDEM()
+# imgset=terminus._imageSet
+# cameraMatrix=cam.getCamMatrixCV2()
+# distortP=cam.getDistortCoeffsCV2()
 
-#Plot lines in image plane and as XYZ lines 
-for i in range(len(pxcoords)):
-    plotLinePX(pxcoords[i], imgset[i].getImageCorr(cameraMatrix, distortP), 
-               show=True, save=target+'uv_'+str(imn[i]))  
-    plotLineXYZ(xyzcoords[i], dem, show=True, save=target+'xyz_'+str(imn[i]))
+# #Plot lines in image plane and as XYZ lines 
+# for i in range(len(pxcoords)):
+#     plotLinePX(pxcoords[i], imgset[i].getImageCorr(cameraMatrix, distortP), 
+#                show=True, save=target+'uv_'+str(imn[i]))  
+#     plotLineXYZ(xyzcoords[i], dem, show=True, save=target+'xyz_'+str(imn[i]))
 
     
 #------------------------------------------------------------------------------

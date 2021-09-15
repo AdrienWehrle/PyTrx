@@ -15,16 +15,12 @@ images).
 #Import packages
 from pathlib import Path
 import numpy as np
-import operator
 from PIL import Image 
 from PIL.ExifTags import TAGS
 from datetime import datetime
 from pylab import array, uint8
 from functools import reduce
-import glob
-import imghdr
-import os
-import cv2
+import glob, operator, imghdr, os, cv2, rawpy
 
 #------------------------------------------------------------------------------
 
@@ -132,7 +128,12 @@ class CamImage(object):
     def getImage(self):
         """Return the image."""
         if self._image is None:
-            self._readImage()
+            try:
+                self._image=Image.open(self._impath)
+            except:
+                rawim = rawpy.imread(self._impath)
+                rawim = rawim.postprocess()
+                self._image=Image.fromarray(rawim)
         return self._image
 
     
@@ -216,29 +217,35 @@ class CamImage(object):
         #Get the Exif data
         exif = {}
         if self._image is None:
-            self._image=Image.open(self._impath)
-        
-        info = self._image._getexif()
+            self._image = self.getImage()
+            
+        img = self._image    
         
         #Put each item into the Exif dictionary
-        for tag, value in info.items():
-            decoded = TAGS.get(tag, tag)
-            exif[decoded] = value            
-        imsize=[exif['ExifImageHeight'], exif['ExifImageWidth']]
-        
-        #Construct datetime object from Exif string
         try:
-            timestr = exif['DateTime']
-            items=timestr.split()
-            date=items[0].split(':')
-            time=items[1].split(':')
-            timestamp=datetime(int(date[0]),int(date[1]),int(date[2]),
-                               int(time[0]),int(time[1]),int(time[2]))
-        except:
-            print ('\nUnable to get valid timestamp for image file: '
-                   + self._impath)
-            timestamp=None
+            info = img._getexif()
+            for tag, value in info.items():
+                decoded = TAGS.get(tag, tag)
+                exif[decoded] = value            
+            imsize=[exif['ExifImageHeight'], exif['ExifImageWidth']]
             
+            #Construct datetime object from Exif string
+            try:
+                timestr = exif['DateTime']
+                items=timestr.split()
+                date=items[0].split(':')
+                time=items[1].split(':')
+                timestamp=datetime(int(date[0]),int(date[1]),int(date[2]),
+                                   int(time[0]),int(time[1]),int(time[2]))
+            except:
+                print ('\nUnable to get valid timestamp for image file: '
+                       + self._impath)
+                timestamp=None
+        except:
+            print('\nUnable to read EXIF information. Extracting from array.')
+            imsize = [img.height, img.width]
+            timestamp=None
+        
         return imsize, timestamp      
 
         
@@ -261,15 +268,24 @@ class CamImage(object):
         
     def _readImage(self):
         """Read image from file path using PIL."""
-        self._image=Image.open(self._impath)
-    
+        try:
+            self._image=Image.open(self._impath)
+        except:
+            rawim = rawpy.imread(self._impath)
+            rawim = rawim.postprocess()
+            self._image=Image.fromarray(rawim)
     
     def _readImageData(self):
         """Function to prepare an image by opening, equalising, converting to 
         a desired band or grayscale, then returning a copy."""               
         #Open image from file using PIL        
         if self._image is None:
-            self._image = Image.open(self._impath)
+            try:
+                self._image=Image.open(self._impath)
+            except:
+                rawim = rawpy.imread(self._impath)
+                rawim = rawim.postprocess()
+                self._image=Image.fromarray(rawim)
         
         img = self._image
         
@@ -288,7 +304,10 @@ class CamImage(object):
                     n = n + h[i+b]
             
             #Convert to grayscale or desired band
-            img = img.point(lut*img.layers)
+            try:
+                img = img.point(lut*img.layers)
+            except:
+                img = img.point(lut*3)
         
         if self._band == 'R':
             img,g,b = img.split()
@@ -351,7 +370,7 @@ class ImageSequence(object):
                 return None
         
         #Construction from string of file paths
-        if isinstance(imageList, str):
+        elif isinstance(imageList, str):
             print('\nImage directory path assumed. Searching for images.' + 
                   ' Attempting to add all to sequence')
             print(str(imageList))
