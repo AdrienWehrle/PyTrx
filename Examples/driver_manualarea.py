@@ -40,7 +40,8 @@ from Utilities import plotAreaPX, plotAreaXYZ
 #Define data inputs
 camdata = '../Examples/camenv_data/camenvs/CameraEnvironment_QAS_2020.txt'
 invmask = None  
-camimgs = '../Examples/images/QAS_test/*.CR2'
+
+camimgs = '../Examples/images/QAS_test/*.CR2'                                  #Image path
 #camimgs = '../Examples/images/QAS_EOS/*.CR2' #End of Season
 
 #Define data output directory

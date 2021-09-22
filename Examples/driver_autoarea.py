@@ -50,8 +50,9 @@ from Utilities import plotAreaPX, plotAreaXYZ
 #Define data inputs
 camdata = '../Examples/camenv_data/camenvs/CameraEnvironment_QAS_2020.txt'
 camamask = '../Examples/camenv_data/masks/areamask.jpg'
-invmask = '../Examples/camenv_data/masks/areainvmask.jpg'  
-camimgs = '../Examples/images/pho_test/*.CR2'
+invmask = '../Examples/camenv_data/masks/areainvmask.jpg' 
+         
+camimgs = '../Examples/images/QAS_test/*.CR2'                                  #Image path
 #camimgs = '../Examples/images/QAS_EOS/*.CR2' #End of Season
 
 #Define data output directory
@@ -178,11 +179,14 @@ FileHandler.writeAreaSHP(xyzpts, imn, destination+'shpfiles/', proj)
 
 #Write all image extents and dems 
 target4 = destination + 'outputimgs/'
+if not os.path.exists(target4):
+    os.makedirs(target4)
+    
 for i in range(len(areas)):
     plotAreaPX(uvpts[i], imgset[i].getImageCorr(cameraMatrix, distortP),       #Change show flag (True/False) to show or not show plots 
-                show=True, save=target4+'uv_'+str(imn[i]).split('.cr2')[0]+'.jpg')  
+                show=True, save=target4+'uv_'+str(imn[i]).split('.CR2')[0]+'.jpg')  
     plotAreaXYZ(xyzpts[i], dem, show=False, save=target4+'xyz_'+
-                str(imn[i]).split('.cr2')[0] + '.jpg')
+                str(imn[i]).split('.CR2')[0] + '.jpg')
 
 
 #------------------------------------------------------------------------------                                                                                                                                                                                                                                                                                                      
