@@ -52,6 +52,7 @@ from Utilities import plotLinePX, plotLineXYZ
 camdata = '../Examples/camenv_data/camenvs/CameraEnvironment_QAS_2020.txt'
 invmask = None  
 camimgs = '../Examples/images/QAS_test/*.CR2'
+#camimgs = '../Examples/images/QAS_EOS/*.CR2' #End of Season
 
 #Define data output directory
 destination = '../Examples/results/manualline/'

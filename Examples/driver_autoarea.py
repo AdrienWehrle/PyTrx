@@ -48,106 +48,95 @@ from Utilities import plotAreaPX, plotAreaXYZ
 #-----------------------------   Map data files   -----------------------------
 
 #Define data inputs
-camdata = '../Examples/camenv_data/camenvs/CameraEnvironmentData_KR3_2014.txt'
-camamask = '../Examples/camenv_data/masks/KR3_2014_amask.jpg'
-caminvmask = '../Examples/camenv_data/invmasks/KR3_2014_inv.jpg'
-camimgs = '../Examples/images/KR3_2014_subset/*.JPG'
+camdata = '../Examples/camenv_data/camenvs/CameraEnvironment_QAS_2020.txt'
+camamask = '../Examples/camenv_data/masks/areamask.jpg'
+invmask = '../Examples/camenv_data/masks/areainvmask.jpg'  
+camimgs = '../Examples/images/pho_test/*.CR2'
+#camimgs = '../Examples/images/QAS_EOS/*.CR2' #End of Season
 
 #Define data output directory
 destination = '../Examples/results/autoarea/'
 if not os.path.exists(destination):
     os.makedirs(destination)
 
-
-#-------------   Create and optimise camera environment object   --------------
-
 #Define camera environment
-cameraenvironment = CamEnv(camdata)
+cam = CamEnv(camdata)
 
-#Set camera optimisation parameters
-optparams = 'YPR'               #Flag to denote which parameters to optimise: 
-                                #YPR=camera pose; INT=intrinsic camera model; 
-                                #EXT=extrinsic camera model; ALL=all camera 
-                                #parameters
-optmethod = 'trf'               #Optimisation method: trf=Trust Region 
-                                #Reflective algorithm; dogbox=dogleg algorithm;
-                                #lm=Levenberg-Marquardt algorithm
+# #Optimisation parameters
+# optflag = 'YPR'                 #Parameters to optimise (YPR/INT/EXT/ALL)
+# optmethod = 'trf'               #Optimisation method (trf/dogbox/lm)
+# show=True                       #Show refined camera environment
 
-#Optimise camera                                
-cameraenvironment.optimiseCamEnv(optparams, optmethod, True)
-
-#Report camera data and show corrected image
-cameraenvironment.reportCamData()
-cameraenvironment.showGCPs()
-cameraenvironment.showPrincipalPoint()
-cameraenvironment.showCalib()
-cameraenvironment.showResiduals()
+# #Optimise camera environment for YPR
+# cam.optimiseCamEnv(optflag, optmethod, show)
+# #Plot camera environment
+# cam.showPrincipalPoint()
+# cam.showCalib()
 
 #---------------------   Calculate homography   -------------------------------
 
 #Set homography parameters
-hgmethod='sparse'               #Sparse/dense homography method
-hgseed = [50000, 0.1, 5.0]      #Seeding parameters (max. pts, quality, min. 
-                                #distance)
-hgtrack = [(25,25), 1.0, 4]     #Tracking parameters (window size, backtracking 
-                                #threshold, min. number of pts)
+hmethod='sparse'                #Method
+hgwinsize=(25,25)               #Tracking window size
+hgback=1.0                      #Back-tracking threshold
+hgmax=50000                     #Maximum number of points to seed
+hgqual=0.1                      #Corner quality for seeding
+hgmind=5.0                      #Minimum distance between seeded points
+hgminf=4                        #Minimum number of seeded points to track
 
 #Set up Homography object
-homog = Homography(camimgs, cameraenvironment, caminvmask, calibFlag=True, 
-                   band='L', equal=True)
+homog = Homography(camimgs, cam, invmask, calibFlag=True, band='L', equal=True)
 
 #Calculate homography
-hg = homog.calcHomographies([hgmethod, hgseed, hgtrack])        
-homogmatrix = [item[0] for item in hg]
+hg = homog.calcHomographies([hmethod, [hgmax, hgqual, hgmind], [hgwinsize, 
+                             hgback, hgminf]])    
+      
+homogmatrix = [item[0] for item in hg] 
 
 
 #----------------------   Detect and calculate areas  -------------------------             
 
-#Define Area class initialisa    
-colour=False                #Define colour range?
-verify=False                #Manually verify detected areas?
-calibFlag = True            #Detect with corrected or uncorrected images
-maxim = 0                   #Image number of maximum areal extent 
-imband = 'R'                #Desired image band
-equal = True                #Images with histogram equalisation?
-threshold = 5               #Threshold for number of retained polygons
-diff = 'light'              #Image enhancement parameter 1
-phi = 50                    #Image enhancement parameter 2
-theta = 20                  #Image enhancement parameter 3
-maxcol = 8                  #Max value from which areas will be distinguished
-mincol = 1                  #Min value from which areas will be distinguished
-maxim = 3                   #Image number with maximum area of interest
-pxext = [0,1200,2000,1500]  #Plotting extent for interactive plots
-
-
 #Set up Area object, from which areal extent will be measured
-lakes = Area(camimgs, cameraenvironment, homogmatrix, calibFlag, imband, equal)
+imband = 'R'                                                                   #PARAMETER: Desired image band (R/G/B/L)
+equal = True                                                                   #PARAMETER: Images with histogram equalisation? (True/False)
+calibFlag = True                                                               #PARAMETER: Use images with lens distortion or corrected? (True/False)
+lakes = Area(camimgs, cam, homogmatrix, calibFlag, imband, equal)
 
 #Set image enhancement parameters. If these are undefined then they will be 
 #set to a default enhancement of ('light', 50, 20)
+diff = 'light'                                                                 #PARAMETER: Image enhancement parameter 1 (light/dark)
+phi = 50                                                                       #PARAMETER: Image enhancement parameter 2 
+theta = 20                                                                     #PARAMETER: Image enhancement parameter 3
 lakes.setEnhance(diff, phi, theta)
 
 
 #Set colour range, from which extents will be distinguished. If colour range 
 #is not specified, it will be manually defined 
-lakes.setColourrange(maxcol, mincol) 
+define = False                                                                 #PARAMETER: Define colour range with clicks or pre-defined? (True/False)
+if define is False:
+    maxcol = 17                                                                #PARAMETER: Max value from which areas will be distinguished
+    mincol = 14                                                                #PARAMETER: Min value from which areas will be distinguished
+    lakes.setColourrange(maxcol, mincol)                             
 
 
 #Set mask and image with maximum area of interest 
+maxim = 0                                                                      #PARAMETER: Image number of maximum areal extent 
 lakes.setMax(camamask, maxim)                                                                                                                                                     
 
 
-#Set px plotting extent for easier colourrange definition and area verification
-lakes.setPXExt(pxext[0], pxext[1], pxext[2], pxext[3])
+# #Set px plotting extent for easier colourrange definition and area verification
+# pxext = [0,1200,2000,1500]  
+# lakes.setPXExt(pxext[0], pxext[1], pxext[2], pxext[3])
 
 
 #Set polygon threshold (i.e. number of polygons kept)
+threshold = 5                                                                  #PARAMETER: Threshold for number of retained polygons
 lakes.setThreshold(threshold)
 
 
-#-------------------------   Calculate areas   --------------------------------
-
 #Calculate real areas
+colour=False                                                                   #PARAMETER: Define colour range in each image? (True/False)
+verify=False                                                                   #PARAMETERL Manually verify detected areas? (True/False)
 areas = lakes.calcAutoAreas(colour, verify)
 
 
@@ -164,18 +153,13 @@ uvareas = [item[1][0] for item in areas]                            #UV areas
 uvpts = [item[1][1] for item in areas]                              #UV coords
 
 #Get camera and dem information for writing to files
-matrix, tancorr, radcorr = cameraenvironment.getCalibdata()         #CV2 calib
+matrix, tancorr, radcorr = cam.getCalibdata()                       #CV2 calib
 imn = lakes.getImageNames()                                         #Img names
-proj = 32633                                                        #Projection (WGS84)
-dem = cameraenvironment.getDEM()                                    #DEM
+proj = 32622                                                        #Projection (WGS84)
+dem = cam.getDEM()                                                  #DEM
 imgset=lakes._imageSet                                              #Images
-cameraMatrix=cameraenvironment.getCamMatrixCV2()                    #Matrix
-distortP=cameraenvironment.getDistortCoeffsCV2()                    #Distort
-
-
-#Write out camera calibration info to .txt file
-target1 = '../Examples/camenv_data/calib/KR3_2014_1.txt'
-FileHandler.writeCalibFile(matrix, tancorr, radcorr, target1)
+cameraMatrix=cam.getCamMatrixCV2()                                  #Matrix
+distortP=cam.getDistortCoeffsCV2()                                  #Distort
 
 
 #Write homography data to .csv file
@@ -195,9 +179,10 @@ FileHandler.writeAreaSHP(xyzpts, imn, destination+'shpfiles/', proj)
 #Write all image extents and dems 
 target4 = destination + 'outputimgs/'
 for i in range(len(areas)):
-    plotAreaPX(uvpts[i], imgset[i].getImageCorr(cameraMatrix, distortP), 
-               show=True, save=target4+'uv_'+str(imn[i]))  
-    plotAreaXYZ(xyzpts[i], dem, show=True, save=target4+'xyz_'+str(imn[i]))
+    plotAreaPX(uvpts[i], imgset[i].getImageCorr(cameraMatrix, distortP),       #Change show flag (True/False) to show or not show plots 
+                show=True, save=target4+'uv_'+str(imn[i]).split('.cr2')[0]+'.jpg')  
+    plotAreaXYZ(xyzpts[i], dem, show=False, save=target4+'xyz_'+
+                str(imn[i]).split('.cr2')[0] + '.jpg')
 
 
 #------------------------------------------------------------------------------                                                                                                                                                                                                                                                                                                      

@@ -60,6 +60,7 @@ class Area(ImageSequence):
         self._maximg = 0
         self._mask = None
         self._enhance = None
+        self._colourrange = None
         
         if hmatrix is not None:
             self._hmatrix=hmatrix
