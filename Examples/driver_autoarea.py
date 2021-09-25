@@ -52,7 +52,7 @@ camdata = '../Examples/camenv_data/camenvs/CameraEnvironment_QAS_2020.txt'
 camamask = '../Examples/camenv_data/masks/areamask.jpg'
 invmask = '../Examples/camenv_data/masks/areainvmask.jpg' 
          
-camimgs = '../Examples/images/QAS_test/*.CR2'                                  #Image path
+camimgs = '../Examples/images/pho_test/*.CR2'                                  #Image path
 #camimgs = '../Examples/images/QAS_EOS/*.CR2' #End of Season
 
 #Define data output directory
