@@ -3,6 +3,7 @@ RadialDistortion
 TangentialDistortion
 [0. 0.]
 IntrinsicMatrix
+[[3.60636649e+03 0.00000000e+00 0.00000000e+00]
  [0.00000000e+00 3.54125127e+03 0.00000000e+00]
  [2.13650000e+03 1.42450000e+03 1.00000000e+00]]
 End

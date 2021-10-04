@@ -128,7 +128,7 @@ class Area(ImageSequence):
                                            self._enhance[1], self._enhance[2])
                 
                 #Define colour range
-                defineColourrange(setting, setimn, pxplot=self._pxplot)    
+                self._colourrange = defineColourrange(setting, setimn, pxplot=self._pxplot)    
             
         #Set up output datasets
         area=[]
@@ -167,7 +167,7 @@ class Area(ImageSequence):
             
             #Define colour range if required
             if colour is True:
-                defineColourrange(img2, imn, pxplot=self._pxplot)
+                self._colourrange = defineColourrange(img2, imn, pxplot=self._pxplot)
             
             #Calculate extent
             if self._hmatrix is not None:

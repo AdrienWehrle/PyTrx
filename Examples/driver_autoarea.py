@@ -113,7 +113,7 @@ lakes.setEnhance(diff, phi, theta)
 
 #Set colour range, from which extents will be distinguished. If colour range 
 #is not specified, it will be manually defined 
-define = False                                                                 #PARAMETER: Define colour range with clicks or pre-defined? (True/False)
+define = True                                                                  #PARAMETER: Define colour range with clicks or pre-defined? (True/False)
 if define is False:
     maxcol = 17                                                                #PARAMETER: Max value from which areas will be distinguished
     mincol = 14                                                                #PARAMETER: Min value from which areas will be distinguished
@@ -131,13 +131,13 @@ lakes.setMax(camamask, maxim)
 
 
 #Set polygon threshold (i.e. number of polygons kept)
-threshold = 5                                                                  #PARAMETER: Threshold for number of retained polygons
+threshold = 10                                                                 #PARAMETER: Threshold for number of retained polygons
 lakes.setThreshold(threshold)
 
 
 #Calculate real areas
-colour=False                                                                   #PARAMETER: Define colour range in each image? (True/False)
-verify=False                                                                   #PARAMETERL Manually verify detected areas? (True/False)
+colour=True                                                                    #PARAMETER: Define colour range in each image? (True/False)
+verify=True                                                                    #PARAMETER: Manually verify detected areas? (True/False)
 areas = lakes.calcAutoAreas(colour, verify)
 
 
