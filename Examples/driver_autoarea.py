@@ -66,7 +66,7 @@ cam = CamEnv(camdata)
 # #Optimisation parameters
 # optflag = 'YPR'                 #Parameters to optimise (YPR/INT/EXT/ALL)
 # optmethod = 'trf'               #Optimisation method (trf/dogbox/lm)
-# show=True                       #Show refined camera environment
+# show=False                      #Show refined camera environment
 
 # #Optimise camera environment for YPR
 # cam.optimiseCamEnv(optflag, optmethod, show)

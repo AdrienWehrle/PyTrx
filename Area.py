@@ -334,7 +334,7 @@ class Area(ImageSequence):
             
             #Show plot
             plt.show() 
-            plt.close()
+            # plt.close()
             
             #Append all verified extents
             vpx=[]
